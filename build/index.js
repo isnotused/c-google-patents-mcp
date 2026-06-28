@@ -14,11 +14,11 @@ const __dirname = dirname(__filename);
 // ★★★★★★★★★★★★★★★★★★★★★★★★★★
 // ★ デバッグ用ログを追加 ★
 // ★★★★★★★★★★★★★★★★★★★★★★★★★★
-console.log(`--- MCP Server Startup ---`);
-console.log(`[DEBUG] Node version: ${process.version}`);
-console.log(`[DEBUG] Script path: ${__filename}`);
-console.log(`[DEBUG] SERPAPI_API_KEY check: ${process.env.SERPAPI_API_KEY ? 'Exists (set)' : 'MISSING!'}`);
-console.log(`-------------------------`);
+console.error(`--- MCP Server Startup ---`);
+console.error(`[DEBUG] Node version: ${process.version}`);
+console.error(`[DEBUG] Script path: ${__filename}`);
+console.error(`[DEBUG] SERPAPI_API_KEY check: ${process.env.SERPAPI_API_KEY ? 'Exists (set)' : 'MISSING!'}`);
+console.error(`-------------------------`);
 // ★★★★★★★★★★★★★★★★★★★★★★★★★★
 // ロガーのフォーマット設定を共通化
 const createLoggerFormat = () => {
@@ -31,7 +31,9 @@ const initialLogger = winston.createLogger({
     level: 'info',
     format: createLoggerFormat(),
     transports: [
-        new winston.transports.Console()
+        new winston.transports.Console({
+            stderrLevels: Object.keys(winston.config.npm.levels)
+        })
     ]
 });
 // MCP Hostからの環境変数を優先し、.envファイルはフォールバックとして扱う
@@ -39,7 +41,7 @@ const initialLogger = winston.createLogger({
 // .env ファイルの読み込みロジックは削除済み
 // SERPAPI_API_KEY は環境変数からのみ取得する
 // ログレベルの明示的な確認（デバッグ用）
-// console.log(`Environment variable LOG_LEVEL: ${process.env.LOG_LEVEL}`); // Temporarily commented out
+// console.error(`Environment variable LOG_LEVEL: ${process.env.LOG_LEVEL}`); // Temporarily commented out
 initialLogger.debug(`Current initial logger level: ${initialLogger.level}`);
 // ログファイルパスを決定するシンプルな方法
 let logFilePath = null;
@@ -49,7 +51,7 @@ try {
     initialLogger.debug(`Attempting to write to project root log: ${projectLogPath}`);
     fs.writeFileSync(projectLogPath, `# Log file initialization at ${new Date().toISOString()}\n`, { flag: 'a' });
     logFilePath = projectLogPath;
-    console.log(`Created log file in project root: ${logFilePath}`);
+    console.error(`Created log file in project root: ${logFilePath}`);
     initialLogger.debug(`Successfully created/accessed log file at: ${logFilePath}`);
 }
 catch (err) {
@@ -62,7 +64,7 @@ catch (err) {
             const homeLogPath = path.resolve(homeDir, '.google-patents-server.log');
             initialLogger.debug(`Attempting to write to home directory log: ${homeLogPath}`);
             fs.writeFileSync(homeLogPath, `# Log file initialization at ${new Date().toISOString()}\n`, { flag: 'a' });
-            console.log(`Created log file in home directory: ${homeLogPath}`);
+            console.error(`Created log file in home directory: ${homeLogPath}`);
             logFilePath = homeLogPath;
             initialLogger.debug(`Successfully created/accessed log file at: ${logFilePath}`);
         }
@@ -76,7 +78,7 @@ catch (err) {
             initialLogger.debug(`Attempting to write to temp directory log: ${tmpPath}`);
             fs.writeFileSync(tmpPath, `# Log file initialization at ${new Date().toISOString()}\n`, { flag: 'a' });
             logFilePath = tmpPath;
-            console.log(`Created log file in temp directory: ${logFilePath}`);
+            console.error(`Created log file in temp directory: ${logFilePath}`);
             initialLogger.debug(`Successfully created/accessed log file at: ${logFilePath}`);
         }
         catch (err3) {
@@ -88,7 +90,7 @@ catch (err) {
 }
 // 環境変数からログレベルを確実に取得
 const logLevel = process.env.LOG_LEVEL || 'info';
-console.log(`Setting log level to: ${logLevel}`);
+console.error(`Setting log level to: ${logLevel}`);
 initialLogger.debug(`Configured log level from environment: ${logLevel}`);
 // Winstonロガーの設定
 const logger = winston.createLogger({
@@ -99,7 +101,10 @@ const logger = winston.createLogger({
     })),
     transports: [
         // コンソールトランスポートもログレベル設定を継承
-        new winston.transports.Console({ level: logLevel })
+        new winston.transports.Console({
+            level: logLevel,
+            stderrLevels: Object.keys(winston.config.npm.levels)
+        })
     ]
 });
 logger.debug('Winston logger created with console transport');
@@ -115,7 +120,7 @@ if (logFilePath) {
         });
         // ファイルトランスポート追加
         logger.add(fileTransport);
-        console.log(`Added log file: ${logFilePath}`);
+        console.error(`Added log file: ${logFilePath}`);
         logger.debug(`File transport added to logger with level: ${logLevel}`);
         // 同期書き込みテスト - シンプルな起動メッセージのみに置き換え
         fs.appendFileSync(logFilePath, `# System startup - ${new Date().toISOString()}\n`);
@@ -247,7 +252,7 @@ class GooglePatentsServer {
                                 q: { type: 'string', description: "Search query (required). Although optional in SerpApi docs, a non-empty query is practically needed. Use semicolon (;) to separate multiple terms. Advanced syntax like '(Coffee) OR (Tea);(A47J)' is supported. See 'About Google Patents' for details." },
                                 page: { type: 'integer', description: 'Page number for pagination (default: 1).', default: 1 },
                                 num: { type: 'integer', description: 'Number of results per page (default: 10). **IMPORTANT: Must be 10 or greater (up to 100).**', default: 10, minimum: 10, maximum: 100 },
-                                sort: { type: 'string', enum: ['relevance', 'new', 'old'], description: "Sorting method. 'relevance' (default), 'new' (newest by filing/publication date), 'old' (oldest by filing/publication date).", default: 'relevance' },
+                                // sort: { type: 'string', enum: ['relevance', 'new', 'old'], description: "Sorting method. 'relevance' (default), 'new' (newest by filing/publication date), 'old' (oldest by filing/publication date).", default: 'relevance' },
                                 before: { type: 'string', description: "Maximum date filter (e.g., 'publication:20231231', 'filing:20220101'). Format: type:YYYYMMDD where type is 'priority', 'filing', or 'publication'." },
                                 after: { type: 'string', description: "Minimum date filter (e.g., 'publication:20230101', 'filing:20220601'). Format: type:YYYYMMDD where type is 'priority', 'filing', or 'publication'." },
                                 inventor: { type: 'string', description: 'Filter by inventor names. Separate multiple names with a comma (,).' },
@@ -286,7 +291,7 @@ class GooglePatentsServer {
                 const controller = new AbortController(); // AbortController を try の前に移動
                 const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 seconds timeout
                 try {
-                    console.log('[DEBUG] Entered API call try block'); // tryブロック開始
+                    console.error('[DEBUG] Entered API call try block'); // tryブロック開始
                     // パラメータを構築 (必須パラメータ)
                     const searchParams = new URLSearchParams({
                         engine: 'google_patents',
@@ -300,7 +305,7 @@ class GooglePatentsServer {
                         }
                     }
                     const apiUrl = `https://serpapi.com/search.json?${searchParams.toString()}`;
-                    // console.log(`[DEBUG] Calling SerpApi URL: ${apiUrl}`); // デバッグ用console.log削除
+                    // console.error(`[DEBUG] Calling SerpApi URL: ${apiUrl}`); // デバッグ用console.error削除
                     logger.info(`Calling SerpApi: ${apiUrl.replace(SERPAPI_API_KEY, '****')}`); // ログにはAPIキーを隠す
                     // Use node-fetch with AbortController for timeout (controller と timeoutId は上で定義済み)
                     const response = await fetch(apiUrl, { signal: controller.signal });
@@ -348,15 +353,15 @@ class GooglePatentsServer {
     }
     async run() {
         // ★★★ run() メソッド開始直後 ★★★
-        console.log('[DEBUG] Server run() method started');
+        console.error('[DEBUG] Server run() method started');
         logger.debug('Starting Google Patents MCP server');
         const transport = new StdioServerTransport();
         logger.debug('Created StdioServerTransport');
         // ★★★ connect() 呼び出し直前 ★★★
-        console.log('[DEBUG] Calling server.connect(transport)');
+        console.error('[DEBUG] Calling server.connect(transport)');
         await this.server.connect(transport);
         // ★★★ connect() 呼び出し直後 ★★★
-        console.log('[DEBUG] server.connect(transport) completed');
+        console.error('[DEBUG] server.connect(transport) completed');
         logger.info("Google Patents MCP server running on stdio");
         logger.debug('Server connected to transport and ready to process requests');
     }
