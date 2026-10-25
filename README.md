@@ -42,7 +42,8 @@ These changes aim to improve compatibility with MCP clients like Claude Desktop 
 The easiest way to run this server is using `npx`. This command downloads (if necessary) and runs the server directly.
 
 ```bash
-npx @kunihiros/google-patents-mcp
+# 下载并启动 isnotused 发布的 Google Patents MCP
+npx -y @isnotused/c-google-patents-mcp
 ```
 
 **Note:** Replace `@kunihiros/google-patents-mcp` with the actual published package name if it differs.
@@ -64,7 +65,7 @@ The server requires your SerpApi API key. You can provide it in one of the follo
           "command": "npx",
           "args": [
             "-y", // Skips confirmation if the package isn't installed locally
-            "@kunihiros/google-patents-mcp" // Use the correct package name
+            "@isnotused/c-google-patents-mcp" // Use the correct package name
           ],
           "env": {
             "SERPAPI_API_KEY": "YOUR_ACTUAL_SERPAPI_KEY"
@@ -228,3 +229,15 @@ Returns a JSON object containing the search results from SerpApi. The structure 
 ## License
 
 MIT License (See LICENSE file)
+
+## Project Attribution
+
+This project is based on the original
+[Google Patents MCP Server](https://github.com/KunihiroS/google-patents-mcp)
+by Kunihiro Sasayama.
+
+Original code is licensed under the MIT License.
+The original copyright notice is preserved in LICENSE.
+
+This distribution is maintained under the
+@isnotused/c-google-patents-mcp npm package.

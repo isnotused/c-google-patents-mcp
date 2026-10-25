@@ -1,6 +1,6 @@
 {
-  "name": "@kunihiros/google-patents-mcp",
-  "version": "0.2.0",
+  "name": "@isnotused/c-google-patents-mcp",
+  "version": "0.2.1",
   "description": "MCP server for searching Google Patents via SerpApi",
   "main": "build/index.js",
   "type": "module",
@@ -22,11 +22,11 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/KunihiroS/google-patents-mcp.git"
+    "url": "git+https://github.com/isnotused/c-google-patents-mcp.git"
   },
-  "homepage": "https://github.com/KunihiroS/google-patents-mcp#readme",
+  "homepage": "https://github.com/isnotused/c-google-patents-mcp#readme",
   "bugs": {
-    "url": "https://github.com/KunihiroS/google-patents-mcp/issues"
+    "url": "https://github.com/isnotused/c-google-patents-mcp/issues"
   },
   "files": [
     "build",
@@ -36,13 +36,13 @@
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.8.0",
-    "node-fetch": "^3.3.2",
     "dotenv": "^16.4.5",
+    "node-fetch": "^3.3.2",
     "winston": "^3.13.0"
   },
   "devDependencies": {
     "@types/node": "^20.14.2",
-    "typescript": "^5.4.5",
-    "@types/node-fetch": "^2.6.11"
+    "@types/node-fetch": "^2.6.11",
+    "typescript": "^5.4.5"
   }
 }
